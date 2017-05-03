@@ -1,0 +1,44 @@
+from nltk.tokenize import word_tokenize
+from normalization import tokenize_text
+import pandas as pd
+import gensim
+
+file_loc = "/media/ytatia/New Volume/Grievances_final.xlsx"
+
+df = pd.read_excel(file_loc, index_col=0, skiprows=1, header=0, parse_cols="A", converters={"Description":str})
+
+description = df.index
+problem = ['Internet nahi chal raha hai aur kutte raat ko bahut bhokte hai']
+
+
+
+tokenized_corpus = [word_tokenize(sentence) for sentence in description]
+tokenized_new_doc = [word_tokenize(sentence) for sentence in problem]
+# build the word2vec model on our training corpus
+model = gensim.models.Word2Vec(tokenized_corpus, size=10, window=10,
+                               min_count=2, sample=1e-3)
+
+import numpy as np
+# define function to average word vectors for a text document
+def average_word_vectors(words, model, vocabulary, num_features):
+    feature_vector = np.zeros((num_features,),dtype="float64")
+    nwords = 0.
+    for word in words:
+        if word in vocabulary:
+            nwords = nwords + 1.
+            feature_vector = np.add(feature_vector, model[word])
+            if nwords:
+                feature_vector = np.divide(feature_vector, nwords)
+    return feature_vector
+# generalize above function for a corpus of documents
+def averaged_word_vectorizer(corpus, model, num_features):
+    vocabulary = set(model.index2word)
+    features = [average_word_vectors(tokenized_sentence, model, vocabulary, num_features)
+                    for tokenized_sentence in corpus]
+    return np.array(features)
+
+avg_word_vec_features = averaged_word_vectorizer(corpus=tokenized_corpus, model=model, num_features=10)
+print np.round(avg_word_vec_features, 3)
+
+print model['department']
+

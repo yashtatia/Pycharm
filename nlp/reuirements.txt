@@ -1,0 +1,7 @@
+Pattern==2.6
+Unidecode==0.4.19
+nltk==3.2.1
+numpy==1.11.3
+pandas==0.19.2
+scikit-learn==0.18.1
+tag==0.3.1
